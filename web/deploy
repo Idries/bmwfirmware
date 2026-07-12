@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+# Usage: ./deploy prod
+#        ./deploy test
+#
+# Requires FTP_USER and FTP_PASS env vars (source ../eukhost/eukenv or similar).
+
+import argparse
+import ftplib
+import io
+import os
+import ssl
+
+_ftp_host = os.environ.get("FTP_HOST", "ftp.hamadi.net")
+_ftp_user = os.environ["FTP_USER"]
+_ftp_pass = os.environ["FTP_PASS"]
+
+ENVIRONMENTS = {
+    "prod": {
+        "host":        _ftp_host,
+        "user":        _ftp_user,
+        "password":    _ftp_pass,
+        "remote_path": "public_html/bmwupdate.hamadi.net",
+    },
+    "test": {
+        "host":        _ftp_host,
+        "user":        _ftp_user,
+        "password":    _ftp_pass,
+        "remote_path": "public_html/bmwupdate-test.hamadi.net",
+    },
+}
+
+LOCAL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public_html")
+EXCLUDE   = {".ftpquota", ".htpasswd", ".DS_Store"}
+
+TEST_HTACCESS = """\
+RewriteEngine On
+AuthType Basic
+AuthName "Restricted"
+AuthUserFile /home/hamadi/public_html/bmwupdate-test.hamadi.net/.htpasswd
+Require valid-user
+"""
+
+TEST_HTPASSWD = "idries:{SHA}REDACTED"
+
+
+def ensure_dir(ftp, path):
+    try:
+        ftp.mkd(path)
+    except ftplib.error_perm:
+        pass
+
+
+def upload(ftp, local_dir, remote_dir, test_env=False):
+    ensure_dir(ftp, remote_dir)
+    for name in sorted(os.listdir(local_dir)):
+        if name in EXCLUDE:
+            print(f"  skip    {name}")
+            continue
+        local  = os.path.join(local_dir, name)
+        remote = f"{remote_dir.rstrip('/')}/{name}"
+        if os.path.isdir(local):
+            upload(ftp, local, remote, test_env)
+        else:
+            print(f"  upload  {local}  →  {remote}")
+            with open(local, "rb") as f:
+                ftp.storbinary(f"STOR {remote}", f)
+
+
+def list_remote_tree(ftp, remote_dir):
+    files, dirs = [], []
+    try:
+        entries = list(ftp.mlsd(remote_dir, facts=["type"]))
+    except ftplib.error_perm:
+        return files, dirs
+    for name, facts in entries:
+        if name in (".", ".."):
+            continue
+        path = remote_dir.rstrip("/") + "/" + name
+        if facts.get("type") == "dir":
+            dirs.append(path)
+            sf, sd = list_remote_tree(ftp, path)
+            files.extend(sf)
+            dirs.extend(sd)
+        else:
+            files.append(path)
+    return files, dirs
+
+
+def collect_local_paths(local_dir, remote_dir):
+    remote_root    = remote_dir.rstrip("/")
+    expected_files = set()
+    expected_dirs  = set()
+    for dirpath, dirnames, filenames in os.walk(local_dir):
+        for dirname in dirnames:
+            rel = os.path.relpath(os.path.join(dirpath, dirname), local_dir)
+            expected_dirs.add(remote_root + "/" + rel.replace(os.sep, "/"))
+        for filename in filenames:
+            if filename in EXCLUDE:
+                continue
+            rel = os.path.relpath(os.path.join(dirpath, filename), local_dir)
+            expected_files.add(remote_root + "/" + rel.replace(os.sep, "/"))
+    return expected_files, expected_dirs
+
+
+def remove_stale(ftp, local_dir, remote_dir):
+    expected_files, expected_dirs = collect_local_paths(local_dir, remote_dir)
+    remote_files, remote_dirs     = list_remote_tree(ftp, remote_dir)
+
+    for path in remote_files:
+        if path not in expected_files and os.path.basename(path) not in EXCLUDE:
+            print(f"  delete  {path}")
+            try:
+                ftp.delete(path)
+            except ftplib.error_perm as e:
+                print(f"  error deleting {path}: {e}")
+
+    for path in sorted(remote_dirs, key=lambda p: p.count("/"), reverse=True):
+        if path not in expected_dirs:
+            try:
+                ftp.rmd(path)
+                print(f"  rmdir   {path}")
+            except ftplib.error_perm:
+                pass
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Deploy public_html/ via FTP.")
+    parser.add_argument("environment", choices=ENVIRONMENTS.keys())
+    args = parser.parse_args()
+
+    env = ENVIRONMENTS[args.environment]
+    test_env = args.environment == "test"
+    print(f"Deploying to {args.environment} ({env['host']}/{env['remote_path']}) ...")
+
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    with ftplib.FTP_TLS(context=ctx) as ftp:
+        ftp.connect(env["host"])
+        ftp.auth()
+        ftp.login(env["user"], env["password"])
+        ftp.prot_p()
+        ftp.set_pasv(True)
+
+        print("\nUploading ...")
+        upload(ftp, LOCAL_DIR, env["remote_path"], test_env)
+
+        if test_env:
+            remote_htaccess = env["remote_path"] + "/.htaccess"
+            ftp.storbinary(f"STOR {remote_htaccess}", io.BytesIO(TEST_HTACCESS.encode()))
+            print(f"  wrote   {remote_htaccess}")
+            remote_htpasswd = env["remote_path"] + "/.htpasswd"
+            ftp.storbinary(f"STOR {remote_htpasswd}", io.BytesIO(TEST_HTPASSWD.encode()))
+            print(f"  wrote   {remote_htpasswd}")
+
+        print("\nRemoving stale files ...")
+        remove_stale(ftp, LOCAL_DIR, env["remote_path"])
+
+    print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()

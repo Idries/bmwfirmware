@@ -1,0 +1,366 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #0d0d14;
+  --surface:    #16161f;
+  --border:     #2a2a3a;
+  --accent:     #1c69d4;
+  --accent-dim: #1050a0;
+  --text:       #e0e0ec;
+  --text-dim:   #8888a0;
+  --warn:       #c0782a;
+  --success:    #2a7a4a;
+  --radius:     8px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+html { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Layout ────────────────────────────────────────────────── */
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.4rem;
+}
+
+header p {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+/* ── Input card ────────────────────────────────────────────── */
+
+.input-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+input[type="text"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 1rem;
+  padding: 0.65rem 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+input[type="text"]:focus { border-color: var(--accent); }
+input[type="text"]::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+.field-hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.field-hint strong { color: var(--text); }
+
+details.how-to { margin-top: 0.25rem; }
+
+details.how-to summary {
+  font-size: 0.8rem;
+  color: var(--accent);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+details.how-to summary::before { content: '+ '; }
+details[open].how-to summary::before { content: '− '; }
+
+details.how-to .how-to-body {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 0.6rem;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+details.how-to .how-to-body strong { color: var(--text); }
+details.how-to .how-to-body code {
+  background: #222230;
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  font-size: 0.85em;
+  color: #a0c4ff;
+}
+
+/* ── Result ────────────────────────────────────────────────── */
+
+#result { display: flex; flex-direction: column; gap: 1rem; }
+
+.vin-info {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: #1c2a3a;
+  border: 1px solid #2a4060;
+  border-radius: 4px;
+  color: #80b4e8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.2em 0.6em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vin-note {
+  width: 100%;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-top: 0.1rem;
+}
+
+.warn {
+  background: #1e140a;
+  border: 1px solid #3a2510;
+  border-radius: var(--radius);
+  color: #d4904a;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 0.75rem 1rem;
+}
+
+.no-match {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  padding: 1.25rem;
+}
+
+.no-match p + p { margin-top: 0.5rem; }
+
+.prompt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 1rem 1.25rem;
+}
+
+/* ── Match card ────────────────────────────────────────────── */
+
+.match {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.match-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.file-name {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.date {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.match-desc {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.match-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 0.75rem 1rem;
+}
+
+.match-detail > div {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.label {
+  color: var(--text-dim);
+  white-space: nowrap;
+  min-width: 6.5rem;
+}
+
+.value { color: var(--text); }
+
+.download-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-download, .btn-pdf {
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-download {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  flex: 1;
+  text-align: center;
+  min-width: 180px;
+}
+
+.btn-download:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+
+.btn-pdf {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+
+.btn-pdf:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* ── Install guide ─────────────────────────────────────────── */
+
+details.install-guide {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+details.install-guide summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding: 0.85rem 1.1rem;
+  user-select: none;
+  list-style: none;
+}
+
+details.install-guide summary::after { content: ' ↓'; }
+details[open].install-guide summary::after { content: ' ↑'; }
+
+details.install-guide ol {
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  counter-reset: step;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  list-style: none;
+  padding: 1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+details.install-guide li {
+  counter-increment: step;
+  display: flex;
+  gap: 0.75rem;
+}
+
+details.install-guide li::before {
+  content: counter(step);
+  background: #1c2a3a;
+  border-radius: 50%;
+  color: #80b4e8;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  width: 1.5rem;
+  margin-top: 0.1rem;
+}
+
+details.install-guide strong { color: var(--text); }
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 500px) {
+  header { padding: 1.5rem 1rem 1rem; }
+  header h1 { font-size: 1.2rem; }
+  main { padding: 1.25rem 1rem; }
+  .download-buttons { flex-direction: column; }
+  .btn-download { min-width: unset; }
+}

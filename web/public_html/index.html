@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMW iDrive Software Update Finder</title>
+  <meta name="description" content="Find and download the correct BMW iDrive media software update for your vehicle. Enter your VIN or current software version.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>BMW iDrive Software Update Finder</h1>
+  <p>Find the correct media software update for your BMW and download it directly from BMW's servers.</p>
+</header>
+
+<main>
+
+  <div class="input-card">
+
+    <div class="field">
+      <label for="ver-input">Current software version</label>
+      <input type="text" id="ver-input" placeholder="e.g. MN-003.011.002" autocomplete="off" spellcheck="false" inputmode="text">
+      <details class="how-to">
+        <summary>How to find your version</summary>
+        <div class="how-to-body">
+          <p>In your BMW: <strong>Settings → Software update → Show current version</strong></p>
+          <p style="margin-top:0.6rem">The version string starts with two letters followed by three groups of numbers, for example <code>MN-003.011.002</code>. Enter it exactly as shown.</p>
+          <p style="margin-top:0.6rem">The two-letter prefix identifies your head unit family and is the key to finding the right file:</p>
+          <p style="margin-top:0.4rem"><code>MN / TN / HN</code> — NBT Evo (i3, i8 and many 2013–2018 models)<br>
+          <code>MV / TV / HV</code> — Alternative head unit variant<br>
+          <code>MB / TB / HB</code> — Pro-nav with DVD<br>
+          <code>MT / TT / HT</code> — TT/MT head unit variant</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="field">
+      <label for="vin-input">VIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+      <input type="text" id="vin-input" placeholder="17-character VIN" autocomplete="off" spellcheck="false" maxlength="17" inputmode="text">
+      <p class="field-hint">Your VIN is on the dashboard (visible through the windscreen) and on your registration document. Providing it confirms your vehicle model and year.</p>
+    </div>
+
+  </div>
+
+  <div id="result"></div>
+
+</main>
+
+<footer>
+  <p>This tool links to software files hosted on BMW's own servers — no files are hosted here.<br>
+  Not affiliated with or endorsed by BMW Group.</p>
+</footer>
+
+<script src="lookup.js"></script>
+</body>
+</html>
