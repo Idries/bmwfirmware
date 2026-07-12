@@ -16,6 +16,29 @@
 
 <main>
 
+  <details class="how-to" style="margin-bottom:1.5rem">
+    <summary>Why does this exist?</summary>
+    <div class="how-to-body">
+      <p>BMW used to offer a VIN-based lookup on their own site that told you which
+      media/infotainment update file applied to your car. At some point in 2025 that
+      lookup stopped working — it now just errors out, with no official replacement.
+      This was first worked out in a
+      <a href="https://www.reddit.com/r/BMWi3/comments/1lnbld2/media_software_update/" target="_blank" rel="noopener">Reddit thread</a>
+      where owners brute-forced BMW's CDN to find the update files directly.</p>
+      <p style="margin-top:0.6rem">The affected systems are the older head unit generations:
+      <strong>CCC</strong>, <strong>CIC</strong>, and <strong>NBT Evo</strong> — roughly
+      cars from <strong>2009 to 2019</strong>, before BMW moved to the newer OS7/iDrive 7
+      platform (which updates differently, generally over-the-air). If your car is from
+      that window and BMW's own site can't find your update, this is why.</p>
+      <p style="margin-top:0.6rem">The files themselves are still sitting on BMW's servers —
+      they just can't be found by VIN anymore. This tool re-derives the same mapping from
+      BMW's own readme PDFs so you can find your file by version number (and VIN, for
+      context) instead, then links you straight to BMW's servers to download it. See
+      <a href="https://github.com/Idries/bmwfirmware/blob/main/SOURCES.md">SOURCES.md</a>
+      for how this was figured out.</p>
+    </div>
+  </details>
+
   <div class="input-card">
 
     <div class="field">
@@ -50,6 +73,9 @@
 <footer>
   <p>This tool links to software files hosted on BMW's own servers — no files are hosted here.<br>
   Not affiliated with or endorsed by BMW Group.</p>
+  <p style="margin-top:0.6rem">Provided as-is, purely to help you locate the file BMW already publishes for your
+  vehicle. No warranty of any kind — use at your own risk. The author accepts no liability for
+  any loss or damage arising from use of this site or the linked files.</p>
 </footer>
 
 <script src="lookup.js"></script>
