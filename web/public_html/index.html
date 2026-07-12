@@ -3,15 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BMW iDrive Software Update Finder</title>
-  <meta name="description" content="Find and download the correct BMW iDrive media software update for your vehicle. Enter your VIN or current software version.">
+  <title>BMW VIN Lookup Not Working? Find Your iDrive Update File</title>
+  <meta name="description" content="BMW's VIN-based software update lookup stopped working in 2025 and now just errors out. Find your BMW iDrive media/infotainment update file (CCC, CIC, NBT Evo — roughly 2009–2019 models) by version number instead, with a direct download link from BMW's own servers.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "BMW iDrive Software Update Finder",
+    "description": "Find the correct BMW iDrive media/infotainment software update file by version number or VIN, with a direct download link from BMW's own servers. Built after BMW's own VIN-based update lookup stopped working in 2025.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why is BMW's VIN lookup for software updates not working?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In 2025, BMW's VIN-based update lookup started returning an error instead of update files, with no official replacement. This site works around that by looking up your update using your current software version (and VIN, for context) instead, then links directly to the file on BMW's own servers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which BMW models are affected by the broken VIN lookup?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cars with CCC, CIC, or NBT Evo head units — roughly 2009 to 2019 models — before BMW moved to the newer OS7/iDrive 7 platform, which updates differently, generally over-the-air."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this an official BMW site?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool is not affiliated with or endorsed by BMW Group. It links directly to update files already hosted on BMW's own servers rather than hosting or redistributing them."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
 <header>
-  <h1>BMW iDrive Software Update Finder</h1>
-  <p>Find the correct media software update for your BMW and download it directly from BMW's servers.</p>
+  <h1>BMW iDrive Software Update Finder <span class="beta-badge">Beta</span></h1>
+  <p>BMW's own VIN lookup for software updates is broken. Find your correct media update file here instead, and download it directly from BMW's servers.</p>
 </header>
 
 <main>
@@ -36,6 +83,25 @@
       context) instead, then links you straight to BMW's servers to download it. See
       <a href="https://github.com/Idries/bmwfirmware/blob/main/SOURCES.md">SOURCES.md</a>
       for how this was figured out.</p>
+    </div>
+  </details>
+
+  <details class="how-to" style="margin-bottom:1.5rem">
+    <summary>Frequently asked questions</summary>
+    <div class="how-to-body">
+      <p><strong>Why is BMW's VIN lookup for software updates not working?</strong><br>
+      In 2025, BMW's VIN-based update lookup started returning an error instead of update
+      files, with no official replacement. This site works around that by looking up your
+      update using your current software version (and VIN, for context) instead, then links
+      directly to the file on BMW's own servers.</p>
+      <p style="margin-top:0.8rem"><strong>Which BMW models are affected by the broken VIN lookup?</strong><br>
+      Cars with CCC, CIC, or NBT Evo head units — roughly 2009 to 2019 models — before BMW
+      moved to the newer OS7/iDrive 7 platform, which updates differently, generally
+      over-the-air.</p>
+      <p style="margin-top:0.8rem"><strong>Is this an official BMW site?</strong><br>
+      No. This tool is not affiliated with or endorsed by BMW Group. It links directly to
+      update files already hosted on BMW's own servers rather than hosting or redistributing
+      them.</p>
     </div>
   </details>
 
@@ -76,6 +142,8 @@
   <p style="margin-top:0.6rem">Provided as-is, purely to help you locate the file BMW already publishes for your
   vehicle. No warranty of any kind — use at your own risk. The author accepts no liability for
   any loss or damage arising from use of this site or the linked files.</p>
+  <p style="margin-top:0.6rem">This site is in beta — found a wrong match, a bug, or have feedback?
+  Email <a href="mailto:feedback@bmwupdate.hamadi.net">feedback@bmwupdate.hamadi.net</a>.</p>
 </footer>
 
 <script src="lookup.js"></script>

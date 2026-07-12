@@ -30,6 +30,22 @@ header h1 {
   font-weight: 600;
   letter-spacing: -0.01em;
   margin-bottom: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beta-badge {
+  background: #3a2a0f;
+  border: 1px solid var(--warn);
+  border-radius: 4px;
+  color: #e0a458;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.18em 0.5em;
+  text-transform: uppercase;
+  vertical-align: middle;
 }
 
 header p {
