@@ -30,7 +30,7 @@ ENVIRONMENTS = {
 }
 
 LOCAL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public_html")
-EXCLUDE   = {".ftpquota", ".htpasswd", ".DS_Store"}
+EXCLUDE   = {".ftpquota", ".htpasswd", ".DS_Store", "record.log"}
 
 TEST_HTACCESS = """\
 RewriteEngine On

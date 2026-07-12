@@ -192,10 +192,10 @@ function renderResult(matches, ver) {
         <div><span class="label">After update</span><span class="value">${entry.result}</span></div>
       </div>
       <div class="download-buttons">
-        <a class="btn-download" href="${CDN_BIN}${entry.file}.bin" download>
+        <a class="btn-download" href="${CDN_BIN}${entry.file}.bin" data-track="bin_download" data-file="${entry.file}" download>
           Download ${entry.file}.bin
         </a>
-        <a class="btn-pdf" href="${CDN_PDF}Readme_${entry.file}_en.pdf" target="_blank" rel="noopener">
+        <a class="btn-pdf" href="${CDN_PDF}Readme_${entry.file}_en.pdf" data-track="pdf_view" data-file="${entry.file}" target="_blank" rel="noopener">
           Read PDF
         </a>
       </div>
@@ -253,3 +253,17 @@ function update() {
 
 vinInput.addEventListener('input', update);
 verInput.addEventListener('input', update);
+
+// ── Usage tracking (no cookies, no IP logged — just event + file) ──────────
+
+function track(event, file) {
+  if (!navigator.sendBeacon) return;
+  navigator.sendBeacon('record.php', new URLSearchParams({ event, file: file || '' }));
+}
+
+track('pageview');
+
+resultEl.addEventListener('click', (e) => {
+  const link = e.target.closest('a[data-track]');
+  if (link) track(link.dataset.track, link.dataset.file);
+});

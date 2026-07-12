@@ -1,1 +1,5 @@
 RewriteEngine On
+
+<Files "record.log">
+  Require all denied
+</Files>
