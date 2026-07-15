@@ -12,7 +12,10 @@ import os
 import ssl
 from collections import Counter
 
-_ftp_host = os.environ.get("FTP_HOST", "ftp.hamadi.net")
+# The FTP cert is issued for *.theukhost.net (the shared hosting domain),
+# not ftp.hamadi.net, so connect via the actual server hostname to allow
+# full TLS verification (chain + hostname).
+_ftp_host = os.environ.get("FTP_HOST", "firefly.theukhost.net")
 _ftp_user = os.environ["FTP_USER"]
 _ftp_pass = os.environ["FTP_PASS"]
 
@@ -34,8 +37,6 @@ ENVIRONMENTS = {
 
 def fetch_log(env):
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
 
     remote = env["remote_path"] + "/record.log"
     buf = io.BytesIO()
