@@ -10,7 +10,10 @@ import io
 import os
 import ssl
 
-_ftp_host = os.environ.get("FTP_HOST", "ftp.hamadi.net")
+# The FTP cert is issued for *.theukhost.net (the shared hosting domain),
+# not ftp.hamadi.net, so connect via the actual server hostname to allow
+# full TLS verification (chain + hostname).
+_ftp_host = os.environ.get("FTP_HOST", "firefly.theukhost.net")
 _ftp_user = os.environ["FTP_USER"]
 _ftp_pass = os.environ["FTP_PASS"]
 
@@ -133,8 +136,6 @@ def main():
     print(f"Deploying to {args.environment} ({env['host']}/{env['remote_path']}) ...")
 
     ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
 
     with ftplib.FTP_TLS(context=ctx) as ftp:
         ftp.connect(env["host"])
