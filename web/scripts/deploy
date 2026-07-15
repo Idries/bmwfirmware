@@ -2,37 +2,15 @@
 # Usage: ./deploy prod
 #        ./deploy test
 #
-# Requires FTP_USER and FTP_PASS env vars (source ../eukhost/eukenv or similar).
+# Requires FTP_USER and FTP_PASS env vars (source ../../eukhost/eukenv or similar).
 
-import argparse
 import ftplib
 import io
 import os
-import ssl
 
-# The FTP cert is issued for *.theukhost.net (the shared hosting domain),
-# not ftp.hamadi.net, so connect via the actual server hostname to allow
-# full TLS verification (chain + hostname).
-_ftp_host = os.environ.get("FTP_HOST", "firefly.theukhost.net")
-_ftp_user = os.environ["FTP_USER"]
-_ftp_pass = os.environ["FTP_PASS"]
+import ftp_common
 
-ENVIRONMENTS = {
-    "prod": {
-        "host":        _ftp_host,
-        "user":        _ftp_user,
-        "password":    _ftp_pass,
-        "remote_path": "public_html/bmwupdate.hamadi.net",
-    },
-    "test": {
-        "host":        _ftp_host,
-        "user":        _ftp_user,
-        "password":    _ftp_pass,
-        "remote_path": "public_html/bmwupdate-test.hamadi.net",
-    },
-}
-
-LOCAL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public_html")
+LOCAL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public_html")
 EXCLUDE   = {".ftpquota", ".htpasswd", ".DS_Store", "record.log"}
 
 TEST_HTACCESS = """\
@@ -127,23 +105,11 @@ def remove_stale(ftp, local_dir, remote_dir):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Deploy public_html/ via FTP.")
-    parser.add_argument("environment", choices=ENVIRONMENTS.keys())
-    args = parser.parse_args()
+    environment, env = ftp_common.parse_environment("Deploy public_html/ via FTP.")
+    test_env = environment == "test"
+    print(f"Deploying to {environment} ({env['host']}/{env['remote_path']}) ...")
 
-    env = ENVIRONMENTS[args.environment]
-    test_env = args.environment == "test"
-    print(f"Deploying to {args.environment} ({env['host']}/{env['remote_path']}) ...")
-
-    ctx = ssl.create_default_context()
-
-    with ftplib.FTP_TLS(context=ctx) as ftp:
-        ftp.connect(env["host"])
-        ftp.auth()
-        ftp.login(env["user"], env["password"])
-        ftp.prot_p()
-        ftp.set_pasv(True)
-
+    with ftp_common.connect(env) as ftp:
         print("\nUploading ...")
         upload(ftp, LOCAL_DIR, env["remote_path"], test_env)
 

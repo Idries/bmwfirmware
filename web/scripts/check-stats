@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+# Usage: ./check-stats prod
+#        ./check-stats test
+#
+# Fetches record.log over FTP and summarizes usage counts.
+# Requires FTP_USER and FTP_PASS env vars (source ../../eukhost/eukenv or similar).
+
+import io
+from collections import Counter
+
+import ftp_common
+
+
+def fetch_log(env):
+    remote = env["remote_path"] + "/record.log"
+    buf = io.BytesIO()
+    with ftp_common.connect(env) as ftp:
+        ftp.retrbinary(f"RETR {remote}", buf.write)
+    return buf.getvalue().decode("utf-8", errors="replace")
+
+
+def main():
+    environment, env = ftp_common.parse_environment("Summarize record.log usage stats.")
+    print(f"Fetching record.log from {environment} ({env['host']}/{env['remote_path']}) ...\n")
+
+    text = fetch_log(env)
+    lines = [l for l in text.splitlines() if l.strip()]
+
+    event_counts = Counter()
+    download_files = Counter()
+
+    for line in lines:
+        parts = line.split("\t")
+        if len(parts) < 2:
+            continue
+        event = parts[1]
+        file_id = parts[2] if len(parts) > 2 else ""
+        event_counts[event] += 1
+        if event == "bin_download" and file_id:
+            download_files[file_id] += 1
+
+    print(f"Total events: {len(lines)}")
+    for event, count in event_counts.most_common():
+        print(f"  {event:15s} {count}")
+
+    if download_files:
+        print("\nbin_download breakdown by file:")
+        for file_id, count in download_files.most_common():
+            print(f"  {file_id:12s} {count}")
+
+
+if __name__ == "__main__":
+    main()

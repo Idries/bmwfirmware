@@ -11,7 +11,9 @@ No server-side logic — everything runs in the browser.
 | `public_html/index.html` | Single page, two inputs (version + VIN) |
 | `public_html/style.css` | All styles |
 | `public_html/lookup.js` | All logic — update DB, VIN/version parsing, DOM rendering |
-| `deploy` | FTP deploy script (same pattern as dccra.london) |
+| `scripts/deploy` | FTP deploy script (same pattern as dccra.london) |
+| `scripts/check-stats` | Fetches `record.log` from prod/test and summarizes usage counts |
+| `scripts/ftp_common.py` | Shared FTP connection/env config used by both scripts above |
 
 ## Local development
 
@@ -38,13 +40,20 @@ For production, create an FTP user on whatever domain you point at this site:
 ./cpanel-manage ftp-create bmwupdate <DOMAIN>
 ```
 
-Then fill in the credentials in the `ENVIRONMENTS` dict in `deploy`.
+Then fill in the credentials in the `ENVIRONMENTS` dict in `scripts/ftp_common.py`.
 
 ### Deploy
 
 ```bash
-python3 deploy test
-python3 deploy prod
+python3 scripts/deploy test
+python3 scripts/deploy prod
+```
+
+### Usage stats
+
+```bash
+python3 scripts/check-stats prod
+python3 scripts/check-stats test
 ```
 
 ## Update database
