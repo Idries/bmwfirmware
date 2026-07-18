@@ -15,7 +15,7 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "BMW iDrive Software Update Finder",
-    "description": "Find the correct BMW iDrive media/infotainment software update file by version number or VIN, with a direct download link from BMW's own servers. Built after BMW's own VIN-based update lookup stopped working in 2025.",
+    "description": "Find the correct BMW iDrive media/infotainment software update file by version number, with a direct download link from BMW's own servers. Built after BMW's own VIN-based update lookup stopped working in 2025.",
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
@@ -31,7 +31,7 @@
         "name": "Why is BMW's VIN lookup for software updates not working?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "In 2025, BMW's VIN-based update lookup started returning an error instead of update files, with no official replacement. This site works around that by looking up your update using your current software version (and VIN, for context) instead, then links directly to the file on BMW's own servers."
+          "text": "In 2025, BMW's VIN-based update lookup started returning an error instead of update files, with no official replacement. This site works around that by looking up your update using your current software version instead, then links directly to the file on BMW's own servers."
         }
       },
       {
@@ -48,6 +48,14 @@
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "No. This tool is not affiliated with or endorsed by BMW Group. It links directly to update files already hosted on BMW's own servers rather than hosting or redistributing them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How accurate is the version matching?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Where possible, matching is cross-checked directly against the update files themselves — each contains a manifest that states exactly which starting version it requires — rather than approximated from readme text alone."
         }
       }
     ]
@@ -79,10 +87,22 @@
       that window and BMW's own site can't find your update, this is why.</p>
       <p style="margin-top:0.6rem">The files themselves are still sitting on BMW's servers —
       they just can't be found by VIN anymore. This tool re-derives the same mapping from
-      BMW's own readme PDFs so you can find your file by version number (and VIN, for
-      context) instead, then links you straight to BMW's servers to download it. See
+      BMW's own readme PDFs so you can find your file by version number instead, then links
+      you straight to BMW's servers to download it. See
       <a href="https://github.com/Idries/bmwfirmware/blob/main/SOURCES.md">SOURCES.md</a>
       for how this was figured out.</p>
+      <p style="margin-top:0.6rem">The mapping has since been cross-checked against a second,
+      actively-maintained source — a community
+      <a href="https://gist.github.com/miurhz/29d47fe097875cf40ca0707dd3ffb238" target="_blank" rel="noopener">gist</a>
+      tracking the same update files — and, where possible, against the update files'
+      own internal data: each <code>.bin</code> turns out to be an archive containing a
+      manifest that states exactly which starting version it requires, which is more
+      precise than approximating from readme text alone. The manifest is signed, though
+      that signature isn't independently verifiable — see this
+      <a href="https://shkspr.mobi/blog/2016/02/bmw-are-sending-their-software-updates-unencrypted/" target="_blank" rel="noopener">2016 analysis of the same format</a>,
+      which found the same thing. See
+      <a href="https://github.com/Idries/bmwfirmware/blob/main/FORMAT.md">FORMAT.md</a>
+      for the details.</p>
     </div>
   </details>
 
@@ -92,7 +112,7 @@
       <p><strong>Why is BMW's VIN lookup for software updates not working?</strong><br>
       In 2025, BMW's VIN-based update lookup started returning an error instead of update
       files, with no official replacement. This site works around that by looking up your
-      update using your current software version (and VIN, for context) instead, then links
+      update using your current software version instead, then links
       directly to the file on BMW's own servers.</p>
       <p style="margin-top:0.8rem"><strong>Which BMW models are affected by the broken VIN lookup?</strong><br>
       Cars with CCC, CIC, or NBT Evo head units — roughly 2009 to 2019 models — before BMW
@@ -102,6 +122,12 @@
       No. This tool is not affiliated with or endorsed by BMW Group. It links directly to
       update files already hosted on BMW's own servers rather than hosting or redistributing
       them.</p>
+      <p style="margin-top:0.8rem"><strong>How accurate is the version matching?</strong><br>
+      Where possible, matching is cross-checked directly against the update files themselves —
+      each contains a manifest that states exactly which starting version it
+      requires — rather than approximated from readme text alone. See
+      <a href="https://github.com/Idries/bmwfirmware/blob/main/FORMAT.md">FORMAT.md</a> for
+      how this works.</p>
     </div>
   </details>
 
@@ -122,12 +148,6 @@
           <code>MT / TT / HT</code> — TT/MT head unit variant</p>
         </div>
       </details>
-    </div>
-
-    <div class="field">
-      <label for="vin-input">VIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input type="text" id="vin-input" placeholder="17-character VIN" autocomplete="off" spellcheck="false" maxlength="17" inputmode="text">
-      <p class="field-hint">Your VIN is on the dashboard (visible through the windscreen) and on your registration document. Providing it confirms your vehicle model and year.</p>
     </div>
 
   </div>

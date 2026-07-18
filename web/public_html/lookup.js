@@ -3,125 +3,148 @@
 const CDN_BIN = 'https://static.bmw.com/content/dam/bmw/staticContent/static_bmw_com/bluetooth/updates/bmw/bin/';
 const CDN_PDF = 'https://static.bmw.com/content/dam/bmw/staticContent/static_bmw_com/bluetooth/updates/bmw/pdf/';
 
-// Derived from official BMW readme PDFs for each update file.
-// 'style' distinguishes the old short format (MN-2.18.2) from the long zero-padded format (MN-003.011.002).
+// Derived from official BMW readme PDFs, and — where noted — from the signed
+// SWIP manifest inside the .bin itself (exact per-component "from" versions,
+// extracted directly rather than approximated). 'style' on a variant means
+// "match any version typed in that style, ignore the numbers" (used for the
+// old short-format catch-alls where no numeric detail is available); variants
+// without 'style' compare numerically and accept long-style input only.
 const DB = [
-  { file:'UPD01008', prefixes:['MX','TX'], style:'short',
+  { file:'UPD01008',
     description:'Very old CCC-era iDrive. Bluetooth and media improvements.',
-    fromNotes:'MX-1.x, MX-3.x, TX-2.x, TX-3.x',
-    result:'MX-3.5.4 / TX-3.5.8 (variant-dependent)', date:'2014' },
+    fromNotes:'MX-1.x, MX-3.x, TX-2.x, TX-3.x (and long-style equivalents, e.g. MX/TX-003.004.031 — confirmed via manifest)',
+    result:'MX-3.5.4 / TX-3.5.8 (or TX-2.6.6 / MX-1.12.0, variant-dependent)', date:'2014',
+    variants:[
+      { prefix:'MX', style:'short' },
+      { prefix:'TX', style:'short' },
+      { prefix:'MX', exact:[[3,4,31],[1,10,21],[1,11,1]] },
+      { prefix:'TX', exact:[[3,4,31],[2,5,21],[2,5,25]] },
+    ] },
 
-  { file:'UPD03007', prefixes:['ME','TE'], style:'short',
+  { file:'UPD03007',
     description:'CIC-era iDrive. Bluetooth and media improvements.',
     fromNotes:'ME-8.x, TE-8.x',
-    result:'ME-8.5.5 / TE-8.5.5', date:'2013' },
+    result:'ME-8.5.5 / TE-8.5.5', date:'2013',
+    variants:[
+      { prefix:'ME', style:'short' },
+      { prefix:'TE', style:'short' },
+    ] },
 
-  { file:'UPD05021', prefixes:['MN','TN'], style:'short',
+  { file:'UPD05021',
     description:'NBT Evo early versions. Bluetooth, podcast and multimedia fixes.',
     fromNotes:'MN-1.21, MN-1.23, MN-1.37, MN-2.18, MN-2.34',
-    result:'MN-2.34.1 / TN-2.34.1', date:'2014' },
+    result:'MN-2.34.1 / TN-2.34.1', date:'2014',
+    variants:[
+      { prefix:'MN', style:'short' },
+      { prefix:'TN', style:'short' },
+    ] },
 
-  { file:'UPD05074', prefixes:['MN','TN','HN'], style:'long',
-    majorRange:[1,2],
-    description:'NBT Evo mid versions. BlackBerry, iOS, Bluetooth and ConnectedDrive fixes.',
-    fromNotes:'MN-001.021.070 through MN-002.255.071',
-    result:'MN-002.255.071 / TN-002.255.070', date:'2016' },
+  // Supersedes the older UPD05074 — its manifest's "from" list is a strict
+  // subset of this one's, so anything UPD05074 could update from, this file
+  // can too (usually reaching an equal-or-newer target). UPD05074 dropped.
+  { file:'UPD05081',
+    description:'NBT Evo (all generations). BlackBerry/iOS/Bluetooth and ConnectedDrive Services fixes — supersedes UPD05074.',
+    fromNotes:'MN/TN/HN 001.020.x through 003.255.x (multiple historical entry points)',
+    result:'MN-003.013.001 / TN-003.255.080 / HN-003.255.080 (or an earlier intermediate target, variant-dependent)', date:'2016–2018',
+    variants:[
+      { prefix:'MN', exact:[[1,20,22],[1,22,2],[1,36,2],[2,17,7],[2,26,3],[2,33,2],[2,38,15]] },
+      { prefix:'MN', minMajor:2, maxMajor:2, minMinor:45, maxMinor:255 },
+      { prefix:'TN', exact:[[1,20,22],[1,22,2],[1,36,2],[2,17,7],[2,26,3],[2,33,2],[2,38,15]] },
+      { prefix:'TN', minMajor:2, maxMajor:2, minMinor:45, maxMinor:255 },
+      { prefix:'TN', minMajor:3, maxMajor:3, minMinor:1, maxMinor:255 },
+      { prefix:'HN', exact:[[1,20,22],[1,22,2],[1,34,6],[2,17,7],[2,26,3],[2,34,4],[2,38,15]] },
+      { prefix:'HN', minMajor:2, maxMajor:2, minMinor:43, maxMinor:255 },
+      { prefix:'HN', minMajor:3, maxMajor:3, minMinor:1, maxMinor:255 },
+    ] },
 
-  { file:'UPD05081', prefixes:['MN','TN','HN'], style:'long',
-    majorRange:[3,3],
-    description:'NBT Evo latest. ConnectedDrive Services improvements.',
-    fromNotes:'MN-003.001.002, MN-003.003.001, MN-003.009.004, MN-003.011.002, MN-003.013.001',
-    result:'MN-003.013.001 / TN-003.255.080 / HN-003.255.080', date:'November 2018' },
+  // Not in BMW's own naming: reachable only via the "UPD07032" URL. Its
+  // readme's own printed header says "UPD09031", and its signed manifest's
+  // internal ID is SWIP 130.017.025 — three different labels, verified (via
+  // the manifest's RSA-signed dependency data) to be the same authentic file.
+  { file:'UPD07032',
+    description:'Alternative head unit, early generation (010.x–130.009.x). USB/Bluetooth stability, accessory-mode and podcast fixes. Also seen labeled "UPD09031" (readme header) or SWIP 130.017.025 (manifest ID) — same file.',
+    fromNotes:'MV/TV 010.012.001, 100.011.001, 110.002.002/004.001, 130.006.007–130.016.001 (variant-dependent)',
+    result:'MV-130.009.020 / TV-130.017.020 / HV-130.017.021', date:'2017',
+    variants:[
+      { prefix:'MV', exact:[[10,12,1],[100,11,1],[110,2,2],[110,4,1],[130,7,2],[130,6,7],[130,8,3]] },
+      { prefix:'TV', exact:[[10,12,1],[110,4,1],[110,2,2],[100,11,1],[130,7,2],[130,6,7],[130,8,3],[130,9,4],[130,15,1],[130,16,1]] },
+    ] },
 
-  { file:'UPD07041', prefixes:['MV','TV'], style:'long',
-    majorRange:[110,110],
+  { file:'UPD07041',
     description:'Alternative head unit (110.x series). iOS 11 call list transfer fix.',
-    fromNotes:'MV-110.005.011, TV-110.005.030',
-    result:'MV-110.006.x / TV-110.006.x / HV-130.017.032', date:'2017' },
+    fromNotes:'MV/TV-110.002.002',
+    result:'MV-110.005.011 / TV-110.005.030 / HV-130.017.032', date:'2017',
+    variants:[
+      { prefix:'MV', exact:[[110,2,2]] },
+      { prefix:'TV', exact:[[110,2,2]] },
+    ] },
 
-  { file:'UPD07044', prefixes:['MV','TV','HV'], style:'long',
-    majorRange:[130,130], minorRange:[0,16],
+  { file:'UPD07044',
     description:'Alternative head unit (130.x series). ConnectedDrive improvements.',
-    fromNotes:'MV-130.008.020, MV-130.009.020, MV-130.015.001, MV-130.016.001',
-    result:'TV-130.025.041', date:'2017' },
+    fromNotes:'MV/TV/HV 130.006.007 through 130.024.001 (variant-dependent)',
+    result:'MV-130.009.020 / TV-130.025.041 / HV-130.025.041', date:'2017',
+    variants:[
+      { prefix:'MV', exact:[[130,6,7],[130,7,2],[130,8,3]] },
+      { prefix:'TV', exact:[[130,6,7],[130,7,2],[130,8,3],[130,9,4],[130,15,1],[130,16,1],[130,18,3],[130,20,2],[130,22,1],[130,24,1]] },
+      { prefix:'HV', exact:[[130,6,7],[130,7,2],[130,8,3],[130,9,4],[130,15,1],[130,16,1],[130,18,3],[130,20,2],[130,22,1],[130,24,1]] },
+    ] },
 
-  { file:'UPD07052', prefixes:['MV','TV','HV'], style:'long',
-    majorRange:[130,130], minorRange:[17,999],
+  { file:'UPD07052',
     description:'Alternative head unit (later 130.x). Bluetooth and Apple Watch/iPhone fixes.',
-    fromNotes:'TV-130.017.x through TV-130.026.x',
-    result:'TV-130.027.051 / HV-130.027.051', date:'2018' },
+    fromNotes:'TV/HV-130.026.001',
+    result:'TV-130.027.051 / HV-130.027.051', date:'2018',
+    variants:[
+      { prefix:'TV', exact:[[130,26,1]] },
+      { prefix:'HV', exact:[[130,26,1]] },
+    ] },
 
-  { file:'UPD09032', prefixes:['TB','MB','HB'], style:'long',
-    majorRange:[2,6],
-    description:'Pro-nav with DVD (002.x–006.x). iPhone 8/X call list and CarPlay name fix.',
-    fromNotes:'TB/MB 002.x.x – 006.x.x',
-    result:'TB/MB updated variant', date:'2018' },
+  // Supersedes UPD09032/UPD09041/UPD09042 — same superseding relationship as
+  // UPD05081 above the older UPD05074 (confirmed via manifest: each older
+  // file's "from" list is a strict subset of this one's).
+  { file:'UPD09051',
+    description:'Pro-nav with DVD (all generations, 001.x–006.x). Contact photos, black screen, stability, CarPlay/call-list and ConnectedDrive fixes — supersedes UPD09032/09041/09042.',
+    fromNotes:'TB/MB/HB 001.029.x through 006.025.x (multiple historical entry points)',
+    result:'TB-006.018.050 / MB-006.026.050 / HB-006.026.050 (or an earlier intermediate target, variant-dependent)', date:'2018–2020',
+    variants:[
+      { prefix:'TB', exact:[[1,30,1],[1,31,23],[1,34,7],[1,40,1],[1,41,23],[1,42,7],[1,43,2],[1,44,1],[1,45,23],
+                             [1,47,3],[1,52,4],[1,56,1],[1,58,1],[1,60,1],[1,61,23],[1,62,32],[1,63,40],
+                             [2,20,12],[2,22,1],[2,23,22],[2,32,18],[2,34,2],[2,35,22],
+                             [3,6,39],[3,8,11],[3,10,3],[3,11,23],
+                             [5,1,16],[5,2,1],[5,3,23],[5,4,32],[5,8,26],[5,10,2],[5,12,1],[5,13,32],
+                             [6,1,41],[6,1,44],[6,2,32],[6,6,6],[6,7,32],[6,15,14],[6,16,2],[6,17,6]] },
+      { prefix:'MB', exact:[[1,30,1],[1,34,7],[1,40,1],[1,44,1],[1,61,23],
+                             [2,22,1],[2,34,2],
+                             [5,1,16],[5,2,1],[5,8,26],[5,10,2],[5,12,1],
+                             [6,1,41],[6,1,44],[6,6,6],[6,15,14],[6,16,2],[6,17,6],[6,23,7],[6,25,1]] },
+      { prefix:'MB', minMajor:1, maxMajor:1, minMinor:47, maxMinor:60 },
+      { prefix:'HB', exact:[[1,29,30],[1,34,7],[1,40,1],[1,42,7],[1,43,2],[1,61,23],[1,62,32],
+                             [2,20,12],[2,30,2],[2,32,18],
+                             [3,6,39],[3,8,11],
+                             [5,1,16],[5,2,1],[5,8,26],[5,10,2],[5,12,1],[5,3,22],
+                             [6,1,41],[6,1,44],[6,6,6],[6,7,32],[6,15,14],[6,16,2],[6,17,6],[6,23,7],[6,25,1]] },
+      { prefix:'HB', minMajor:1, maxMajor:1, minMinor:46, maxMinor:60 },
+    ] },
 
-  { file:'UPD09051', prefixes:['TB','MB','HB'], style:'long',
-    majorRange:[1,1], minorRange:[0,60],
-    description:'Pro-nav with DVD (001.047.x–001.060.x). Contact photos, black screen, stability.',
-    fromNotes:'TB/MB 001.047.x through 001.060.x',
-    result:'TB/MB updated variant', date:'2018' },
-
-  { file:'UPD09042', prefixes:['TB','MB','HB'], style:'long',
-    majorRange:[1,1], minorRange:[62,62],
-    description:'Pro-nav with DVD (001.062.x). Restores CD/DVD playback from paused point.',
-    fromNotes:'TB-001.062.032, MB-001.062.040',
-    result:'TB-001.062.032 / MB-001.062.040 / HB-001.062.032', date:'2018' },
-
-  { file:'UPD09041', prefixes:['TB','MB','HB'], style:'long',
-    majorRange:[1,1], minorRange:[63,999],
-    description:'Pro-nav with DVD (001.063.x+). ConnectedDrive and DVD resume fix.',
-    fromNotes:'TB-001.063.040, MB-001.062.040',
-    result:'TB-001.063.040 / MB-001.062.040 / HB-001.062.032', date:'2018' },
-
-  { file:'UPD11011', prefixes:['TT','MT','HT'], style:'long',
-    majorRange:[1,1],
+  { file:'UPD11011',
     description:'TT/MT head unit (001.x). Improves telephone with Apple iPhone.',
     fromNotes:'TT/MT 001.x.x',
-    result:'TT/MT 001.x updated', date:'2018' },
+    result:'TT/MT 001.x updated', date:'2018',
+    variants:[
+      { prefix:'TT', minMajor:1, maxMajor:1 },
+      { prefix:'MT', minMajor:1, maxMajor:1 },
+      { prefix:'HT', minMajor:1, maxMajor:1 },
+    ] },
 
-  { file:'UPD11024', prefixes:['TT','MT','HT'], style:'long',
-    majorRange:[2,999],
+  { file:'UPD11024',
     description:'TT/MT head unit (002.x+). Samsung Galaxy S10 and Bluetooth stability fix.',
     fromNotes:'TT/MT 002.x.x',
-    result:'TT/MT 002.x updated', date:'2019' },
+    result:'TT/MT 002.x updated', date:'2019',
+    variants:[
+      { prefix:'TT', minMajor:2, maxMajor:999 },
+      { prefix:'MT', minMajor:2, maxMajor:999 },
+      { prefix:'HT', minMajor:2, maxMajor:999 },
+    ] },
 ];
-
-// ── VIN ──────────────────────────────────────────────────────────────────────
-
-const YEAR_MAP = {
-  A:2010,B:2011,C:2012,D:2013,E:2014,F:2015,G:2016,H:2017,
-  J:2018,K:2019,L:2020,M:2021,N:2022,P:2023,R:2024,S:2025,
-  T:2026,V:2027,W:2028,X:2029,Y:2030,
-};
-
-function parseVin(raw) {
-  const vin = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (vin.length === 0) return null;
-
-  if (vin.length !== 17) {
-    const msg = vin.length === 16
-      ? `VIN is 16 characters — one digit may be missing. If this is a 2018 vehicle try <strong>${vin.slice(0,9)}J${vin.slice(9)}</strong>.`
-      : `VIN must be 17 characters (you entered ${vin.length}).`;
-    return { error: msg };
-  }
-
-  const wmi = vin.slice(0, 3);
-  const year = YEAR_MAP[vin[9]] || null;
-
-  let model = null, headUnitNote = null;
-  if (wmi === 'WBY') {
-    model = 'BMW i (i3 or i8)';
-    headUnitNote = 'All i3 and i8 models use the NBT Evo head unit — version prefix MN, TN, or HN.';
-  } else if (['WBA','WBS','WBX'].includes(wmi)) {
-    model = 'BMW AG';
-  } else if (['5UX','5YM','4US'].includes(wmi)) {
-    model = 'BMW (North America)';
-  }
-
-  return { vin, wmi, year, model, headUnitNote };
-}
 
 // ── Version string ────────────────────────────────────────────────────────────
 
@@ -138,39 +161,29 @@ function parseVersion(raw) {
   };
 }
 
+function matchesVariant(ver, v) {
+  if (v.prefix !== ver.prefix) return false;
+  if (v.style) return ver.style === v.style;
+  if (ver.style === 'short') return false; // numeric-bounded variants only apply to long-style input
+  if (v.exact) return v.exact.some(([maj, min, pat]) => maj === ver.major && min === ver.minor && pat === ver.patch);
+  if (v.major !== undefined && ver.major !== v.major) return false;
+  if (v.minMajor !== undefined && ver.major < v.minMajor) return false;
+  if (v.maxMajor !== undefined && ver.major > v.maxMajor) return false;
+  if (v.minMinor !== undefined && ver.minor < v.minMinor) return false;
+  if (v.maxMinor !== undefined && ver.minor > v.maxMinor) return false;
+  return true;
+}
+
 function findUpdate(ver) {
-  return DB.filter(entry => {
-    if (!entry.prefixes.includes(ver.prefix)) return false;
-    if (entry.style === 'short') return ver.style === 'short';
-    if (ver.style === 'short') return false;
-    const [lo, hi] = entry.majorRange;
-    if (ver.major < lo || ver.major > hi) return false;
-    if (entry.minorRange) {
-      const [mlo, mhi] = entry.minorRange;
-      if (ver.minor < mlo || ver.minor > mhi) return false;
-    }
-    return true;
-  });
+  return DB.filter(entry => entry.variants.some(v => matchesVariant(ver, v)));
 }
 
 // ── DOM rendering ─────────────────────────────────────────────────────────────
 
-const vinInput     = document.getElementById('vin-input');
 const verInput     = document.getElementById('ver-input');
 const resultEl     = document.getElementById('result');
 
 function pad3(n) { return String(n).padStart(3, '0'); }
-
-function renderVinInfo(info) {
-  if (!info) return '';
-  if (info.error) return `<p class="warn">⚠ ${info.error}</p>`;
-  let html = `<div class="vin-info">`;
-  if (info.model) html += `<span class="tag">${info.model}</span>`;
-  if (info.year)  html += `<span class="tag">${info.year}</span>`;
-  if (info.headUnitNote) html += `<p class="vin-note">${info.headUnitNote}</p>`;
-  html += `</div>`;
-  return html;
-}
 
 function renderResult(matches, ver) {
   if (matches.length === 0) {
@@ -217,41 +230,36 @@ function renderInstall(matches) {
         <li>Keep the engine running. Do not remove the USB drive until the update is complete.</li>
         <li>After completion the car will display the new software version. Tracks and playlists may need to be reselected.</li>
       </ol>
+      <p class="install-note">If the update is rejected as "too old": set the vehicle's date back several years in iDrive, then <strong>lock the car and leave it for 10–15 minutes</strong> before retrying — changing the date alone isn't enough, the Combox module needs that time to actually resync.</p>
+      <p class="install-note">If Bluetooth media metadata stops showing correctly after updating, check that your phone's Bluetooth device name doesn't contain emoji — this has been reported to break track/artist display.</p>
     </details>`;
 }
 
 function update() {
-  const vinRaw = vinInput.value.trim();
   const verRaw = verInput.value.trim();
 
-  if (!vinRaw && !verRaw) {
+  if (!verRaw) {
     resultEl.innerHTML = '';
     resultEl.classList.remove('visible');
     return;
   }
 
-  const vinInfo = vinRaw ? parseVin(vinRaw) : null;
-  const ver     = verRaw ? parseVersion(verRaw) : null;
+  const ver     = parseVersion(verRaw);
   const matches = ver ? findUpdate(ver) : [];
 
   let html = '';
 
-  if (vinInfo) html += renderVinInfo(vinInfo);
-
-  if (verRaw && !ver) {
+  if (!ver) {
     html += `<p class="warn">⚠ Could not parse "<strong>${verRaw}</strong>" — expected format: <code>XX-NNN.NNN.NNN</code> (e.g. <code>MN-003.011.002</code>).</p>`;
-  } else if (ver) {
+  } else {
     html += renderResult(matches, ver);
     html += renderInstall(matches);
-  } else if (vinInfo && !vinInfo.error) {
-    html += `<p class="prompt">Now enter your current software version above to find your specific update.</p>`;
   }
 
   resultEl.innerHTML = html;
   resultEl.classList.add('visible');
 }
 
-vinInput.addEventListener('input', update);
 verInput.addEventListener('input', update);
 
 // ── Usage tracking (no cookies, no IP logged — just event + file) ──────────
