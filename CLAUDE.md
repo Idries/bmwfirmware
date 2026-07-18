@@ -40,7 +40,11 @@ For production, create an FTP user on whatever domain you point at this site:
 ./cpanel-manage ftp-create bmwupdate <DOMAIN>
 ```
 
-Then fill in the credentials in the `ENVIRONMENTS` dict in `web/scripts/ftp_common.py`.
+Then copy `web/.env.example` to `web/.env` and fill in the real host, cPanel
+username, remote paths, and test `.htpasswd` value — `.env` is gitignored, so
+account-specific details never end up committed. `ftp_common.py` loads it
+automatically; FTP credentials themselves still come from `FTP_USER`/`FTP_PASS`
+(sourced from `~/code/eukhost/eukenv`), not from this file.
 
 ### Deploy
 

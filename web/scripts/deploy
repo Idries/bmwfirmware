@@ -13,15 +13,15 @@ import ftp_common
 LOCAL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "public_html")
 EXCLUDE   = {".ftpquota", ".htpasswd", ".DS_Store", "record.log"}
 
-TEST_HTACCESS = """\
+TEST_HTACCESS = f"""\
 RewriteEngine On
 AuthType Basic
 AuthName "Restricted"
-AuthUserFile /home/hamadi/public_html/bmwupdate-test.hamadi.net/.htpasswd
+AuthUserFile /home/{os.environ["CPANEL_USER"]}/{os.environ["TEST_REMOTE_PATH"]}/.htpasswd
 Require valid-user
 """
 
-TEST_HTPASSWD = "idries:{SHA}REDACTED"
+TEST_HTPASSWD = os.environ["TEST_HTPASSWD"]
 
 
 def ensure_dir(ftp, path):
