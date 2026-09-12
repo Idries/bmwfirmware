@@ -91,11 +91,11 @@ const DB = [
 
   { file:'UPD07052',
     description:'Alternative head unit (later 130.x). Bluetooth and Apple Watch/iPhone fixes.',
-    fromNotes:'TV/HV-130.026.001',
+    fromNotes:'TV/MV-130.026.001',
     result:'TV-130.027.051 / HV-130.027.051', date:'2018',
     variants:[
       { prefix:'TV', exact:[[130,26,1]] },
-      { prefix:'HV', exact:[[130,26,1]] },
+      { prefix:'MV', exact:[[130,26,1]] },
     ] },
 
   // Supersedes UPD09032/UPD09041/UPD09042 — same superseding relationship as
