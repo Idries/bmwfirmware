@@ -10,8 +10,10 @@ A tool for finding the correct BMW iDrive media/infotainment software update fil
 | `web/public_html/style.css` | All styles |
 | `web/public_html/lookup.js` | All logic — update DB, version parsing, DOM rendering |
 | `web/scripts/deploy` | FTP deploy script (same pattern as dccra.london) |
-| `web/scripts/check-stats` | Fetches `record.log` from prod/test and summarizes usage counts |
-| `web/scripts/ftp_common.py` | Shared FTP connection/env config used by both scripts above |
+| `web/public_html/record.php` | Records usage events (pageview, download, PDF view) into the environment's MySQL `events` table |
+| `web/public_html/admin/` | Password-protected usage dashboard (`index.php`) and one-time `record.log` import (`backfill.php`) |
+| `web/schema.sql` | `events` table schema — create by hand in each environment's database |
+| `web/scripts/ftp_common.py` | Shared FTP connection/env config used by the deploy script |
 | [`SOURCES.md`](SOURCES.md) | Provenance of every data source the DB is built from |
 | [`FORMAT.md`](FORMAT.md) | Internal format of the BMW update `.bin` files — read before re-deriving anything from them |
 
@@ -55,10 +57,11 @@ python3 web/scripts/deploy prod
 
 ### Usage stats
 
-```bash
-python3 web/scripts/check-stats prod
-python3 web/scripts/check-stats test
-```
+Events are stored in a per-environment MySQL database (schema in `web/schema.sql`).
+Set the `*_DB_*` and `ADMIN_HTPASSWD` vars in `web/.env`; `deploy` writes
+`db_config.php` and the `/admin` auth files from them (never committed). View
+stats at `/admin/` on the deployed site. `admin/backfill.php` is a one-time
+import of the legacy `record.log` — delete it once the import is done.
 
 ## Update database
 

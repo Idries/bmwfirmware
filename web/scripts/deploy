@@ -23,6 +23,34 @@ Require valid-user
 
 TEST_HTPASSWD = os.environ["TEST_HTPASSWD"]
 
+ADMIN_HTPASSWD = os.environ.get("ADMIN_HTPASSWD")
+
+
+def admin_htaccess(remote_path):
+    return f"""\
+AuthType Basic
+AuthName "Restricted"
+AuthUserFile /home/{os.environ["CPANEL_USER"]}/{remote_path}/admin/.htpasswd
+Require valid-user
+"""
+
+
+def db_config_php(env):
+    if not env.get("db_name"):
+        return None
+    host = env["db_host"].replace("'", "\\'")
+    name = env["db_name"].replace("'", "\\'")
+    user = env["db_user"].replace("'", "\\'")
+    pw   = env["db_pass"].replace("'", "\\'")
+    return f"""<?php
+return [
+    'host' => '{host}',
+    'name' => '{name}',
+    'user' => '{user}',
+    'pass' => '{pw}',
+];
+"""
+
 
 def ensure_dir(ftp, path):
     try:
@@ -83,8 +111,9 @@ def collect_local_paths(local_dir, remote_dir):
     return expected_files, expected_dirs
 
 
-def remove_stale(ftp, local_dir, remote_dir):
+def remove_stale(ftp, local_dir, remote_dir, protect=()):
     expected_files, expected_dirs = collect_local_paths(local_dir, remote_dir)
+    expected_files |= set(protect)
     remote_files, remote_dirs     = list_remote_tree(ftp, remote_dir)
 
     for path in remote_files:
@@ -109,9 +138,28 @@ def main():
     test_env = environment == "test"
     print(f"Deploying to {environment} ({env['host']}/{env['remote_path']}) ...")
 
+    db_config = db_config_php(env)
+    protect = []
+    if test_env:
+        protect.append(env["remote_path"] + "/.htaccess")
+        protect.append(env["remote_path"] + "/.htpasswd")
+    if db_config:
+        protect.append(env["remote_path"] + "/db_config.php")
+    if ADMIN_HTPASSWD:
+        protect.append(env["remote_path"] + "/admin/.htaccess")
+        protect.append(env["remote_path"] + "/admin/.htpasswd")
+
     with ftp_common.connect(env) as ftp:
         print("\nUploading ...")
         upload(ftp, LOCAL_DIR, env["remote_path"], test_env)
+
+        # protect=... : these paths have no local counterpart (they're written
+        # below, generated per-environment from .env) so remove_stale() would
+        # otherwise delete them right back out.
+        print("\nRemoving stale files ...")
+        remove_stale(ftp, LOCAL_DIR, env["remote_path"], protect=protect)
+
+        print("\nWriting secrets ...")
 
         if test_env:
             remote_htaccess = env["remote_path"] + "/.htaccess"
@@ -121,8 +169,22 @@ def main():
             ftp.storbinary(f"STOR {remote_htpasswd}", io.BytesIO(TEST_HTPASSWD.encode()))
             print(f"  wrote   {remote_htpasswd}")
 
-        print("\nRemoving stale files ...")
-        remove_stale(ftp, LOCAL_DIR, env["remote_path"])
+        if db_config:
+            remote_db_config = env["remote_path"] + "/db_config.php"
+            ftp.storbinary(f"STOR {remote_db_config}", io.BytesIO(db_config.encode()))
+            print(f"  wrote   {remote_db_config}")
+        else:
+            print("  skip    db_config.php (no DB_* vars set for this environment)")
+
+        if ADMIN_HTPASSWD:
+            remote_admin_htaccess = env["remote_path"] + "/admin/.htaccess"
+            ftp.storbinary(f"STOR {remote_admin_htaccess}", io.BytesIO(admin_htaccess(env["remote_path"]).encode()))
+            print(f"  wrote   {remote_admin_htaccess}")
+            remote_admin_htpasswd = env["remote_path"] + "/admin/.htpasswd"
+            ftp.storbinary(f"STOR {remote_admin_htpasswd}", io.BytesIO(ADMIN_HTPASSWD.encode()))
+            print(f"  wrote   {remote_admin_htpasswd}")
+        else:
+            print("  skip    admin/.htaccess (ADMIN_HTPASSWD not set)")
 
     print("\nDone.")
 

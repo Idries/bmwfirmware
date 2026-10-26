@@ -36,12 +36,20 @@ ENVIRONMENTS = {
         "user":        _ftp_user,
         "password":    _ftp_pass,
         "remote_path": os.environ["PROD_REMOTE_PATH"],
+        "db_host":     os.environ.get("PROD_DB_HOST", "localhost"),
+        "db_name":     os.environ.get("PROD_DB_NAME"),
+        "db_user":     os.environ.get("PROD_DB_USER"),
+        "db_pass":     os.environ.get("PROD_DB_PASS"),
     },
     "test": {
         "host":        _ftp_host,
         "user":        _ftp_user,
         "password":    _ftp_pass,
         "remote_path": os.environ["TEST_REMOTE_PATH"],
+        "db_host":     os.environ.get("TEST_DB_HOST", "localhost"),
+        "db_name":     os.environ.get("TEST_DB_NAME"),
+        "db_user":     os.environ.get("TEST_DB_USER"),
+        "db_pass":     os.environ.get("TEST_DB_PASS"),
     },
 }
 

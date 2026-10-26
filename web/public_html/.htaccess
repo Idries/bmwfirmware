@@ -3,3 +3,7 @@ RewriteEngine On
 <Files "record.log">
   Require all denied
 </Files>
+
+<Files "db_config.php">
+  Require all denied
+</Files>
